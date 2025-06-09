@@ -62,9 +62,12 @@ export async function sendBadgeEmail(userData) {
     };
 
     try {
-        const info = await transporter.sendMail(mailOptions);
-        console.log('Email sent:', info.response);
-        return info;
+        // Temporairement désactivé pour le test
+        // const info = await transporter.sendMail(mailOptions);
+        // console.log('Email sent:', info.response);
+        // return info;
+        console.log('Email sending temporarily disabled for testing');
+        return { response: 'Email sending disabled for testing' };
     } catch (error) {
         console.error('Error sending email:', error);
         throw new Error(`Erreur lors de l'envoi de l'email: ${error.message}`);
