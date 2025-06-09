@@ -72,14 +72,20 @@ export default async function handler(req, res) {
     }
 
     // Generate badge
-    let badgePath;
+    let badgeData;
     try {
-      badgePath = await generateBadge({
+      badgeData = await generateBadge({
         ...userData,
         userId,
         type
       });
-      console.log('Badge generated successfully:', badgePath);
+      
+      if (process.env.VERCEL && badgeData.type === 'pdf') {
+        // On Vercel, we store the PDF bytes in memory
+        console.log('Badge generated successfully (in memory)');
+      } else {
+        console.log('Badge generated successfully:', badgeData);
+      }
     } catch (error) {
       console.error('Error generating badge:', error);
       throw new Error(`Erreur lors de la génération du badge: ${error.message}`);
@@ -87,10 +93,14 @@ export default async function handler(req, res) {
 
     // Send confirmation email with badge
     try {
+      const badgeUrl = process.env.VERCEL && badgeData.type === 'pdf' 
+        ? `/api/badge/${badgeData.userId}`
+        : `/badges/${path.basename(badgeData)}`;
+      
       await sendBadgeEmail({
         ...userData,
         userId,
-        badgeUrl: `/badges/${path.basename(badgePath)}`
+        badgeUrl
       });
       console.log('Email sent successfully');
     } catch (error) {

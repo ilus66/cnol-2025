@@ -17,19 +17,22 @@ export async function generateBadge(userData) {
         const pdfDoc = await PDFDocument.create();
         const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]); // Portrait orientation
 
-        // Ensure badges directory exists (use temp directory for Vercel)
+        // For Vercel, use memory storage instead of file system
         const badgesDir = process.env.VERCEL ? 
-            path.join(process.cwd(), '.tmp', 'badges') : 
+            null : 
             path.join(process.cwd(), 'public', 'badges');
-        console.log('Creating badge in directory:', badgesDir);
-        try {
-            if (!fs.existsSync(badgesDir)) {
-                fs.mkdirSync(badgesDir, { recursive: true });
-                console.log('Created badges directory:', badgesDir);
+        
+        if (badgesDir) {
+            console.log('Creating badge in directory:', badgesDir);
+            try {
+                if (!fs.existsSync(badgesDir)) {
+                    fs.mkdirSync(badgesDir, { recursive: true });
+                    console.log('Created badges directory:', badgesDir);
+                }
+            } catch (error) {
+                console.error('Error creating badges directory:', error);
+                throw new Error(`Erreur lors de la création du répertoire des badges: ${error.message}`);
             }
-        } catch (error) {
-            console.error('Error creating badges directory:', error);
-            throw new Error(`Erreur lors de la création du répertoire des badges: ${error.message}`);
         }
 
         // Calculate quadrant dimensions (portrait)
@@ -366,19 +369,21 @@ export async function generateBadge(userData) {
 
         // Save the PDF
         const pdfBytes = await pdfDoc.save();
-        const pdfPath = path.join(badgesDir, `${userData.userId}.pdf`);
         
+        // For Vercel, return the PDF bytes directly
+        if (process.env.VERCEL) {
+            return {
+                type: 'pdf',
+                data: pdfBytes,
+                userId: userData.userId
+            };
+        }
+        
+        const pdfPath = path.join(badgesDir, `${userData.userId}.pdf`);
         try {
             fs.writeFileSync(pdfPath, pdfBytes);
             console.log('Badge saved to:', pdfPath);
-            
-            // Return different path based on environment
-            if (process.env.VERCEL) {
-                // In Vercel, we need to serve the file from the API route
-                return `/api/badge/${userData.userId}.pdf`;
-            } else {
-                return pdfPath;
-            }
+            return pdfPath;
         } catch (error) {
             console.error('Error saving badge:', error);
             throw new Error(`Erreur lors de la sauvegarde du badge: ${error.message}`);
