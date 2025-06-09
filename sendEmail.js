@@ -11,23 +11,23 @@ const __dirname = path.dirname(__filename);
 export async function sendBadgeEmail(userData) {
     console.log('Starting sendBadgeEmail for user:', userData.email);
     
+    // Configuration SMTP pour CNOL
+    const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'mail.cnol.ma',
+        port: parseInt(process.env.SMTP_PORT) || 465,
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: {
+            user: process.env.SMTP_USER || 'inscription@cnol.ma',
+            pass: process.env.SMTP_PASS
+        }
+    });
+
     // Log SMTP configuration
     console.log('SMTP Configuration:', {
         host: process.env.SMTP_HOST,
         port: process.env.SMTP_PORT,
         secure: process.env.SMTP_SECURE,
         user: process.env.SMTP_USER
-    });
-
-    // Configure transporter (cnol.ma SMTP)
-    const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-        },
     });
 
     // Test SMTP connection
@@ -47,25 +47,25 @@ export async function sendBadgeEmail(userData) {
         throw new Error('Badge PDF non trouvé');
     }
 
+    // Create the email content
     const mailOptions = {
-    try {
-        // Create the email content
-        const mailOptions = {
-            from: process.env.SMTP_FROM,
-            to: userData.email,
-            subject: 'Votre badge CNOL 2025',
-            html: `
-                <h2>Bonjour ${userData.prenom} ${userData.nom},</h2>
-                <p>Merci pour votre inscription au CNOL 2025. Vous pouvez télécharger votre badge ci-dessous.</p>
-                <p><a href="${userData.badgeUrl}" target="_blank">Télécharger mon badge</a></p>
-                <p>Cordialement,</p>
-                <p>L'équipe CNOL</p>
-            `
-        };
+        from: process.env.SMTP_FROM || 'inscription@cnol.ma',
+        to: userData.email,
+        subject: 'Votre badge CNOL 2025',
+        html: `
+            <h2>Bonjour ${userData.prenom} ${userData.nom},</h2>
+            <p>Merci pour votre inscription au CNOL 2025. Vous pouvez télécharger votre badge ci-dessous.</p>
+            <p><a href="${userData.badgeUrl}" target="_blank">Télécharger mon badge</a></p>
+            <p>Cordialement,</p>
+            <p>L'équipe CNOL</p>
+        `
+    };
 
-        // Temporairement désactivé pour le test
-        console.log('Email sending temporarily disabled for testing');
-        return { response: 'Email sending disabled for testing' };
+    // Send the email
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email sent:', info.response);
+        return info;
     } catch (error) {
         console.error('Error sending email:', error);
         throw new Error(`Erreur lors de l'envoi de l'email: ${error.message}`);
