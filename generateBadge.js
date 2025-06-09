@@ -19,6 +19,7 @@ export async function generateBadge(userData) {
 
         // Ensure badges directory exists
         const badgesDir = path.join(process.cwd(), 'public', 'badges');
+        console.log('Creating badge in directory:', badgesDir);
         try {
             if (!fs.existsSync(badgesDir)) {
                 fs.mkdirSync(badgesDir, { recursive: true });
@@ -26,7 +27,7 @@ export async function generateBadge(userData) {
             }
         } catch (error) {
             console.error('Error creating badges directory:', error);
-            throw new Error('Impossible de créer le répertoire des badges');
+            throw new Error(`Erreur lors de la création du répertoire des badges: ${error.message}`);
         }
 
         // Calculate quadrant dimensions (portrait)
@@ -367,12 +368,14 @@ export async function generateBadge(userData) {
         const pdfBytes = await pdfDoc.save();
         const badgeFileName = `${userData.userId}.pdf`;
         const badgePath = path.join(badgesDir, badgeFileName);
+        console.log('Saving badge to:', badgePath);
         try {
             fs.writeFileSync(badgePath, pdfBytes);
             console.log('Badge saved to:', badgePath);
+            return badgePath;
         } catch (error) {
             console.error('Error saving badge:', error);
-            throw new Error('Impossible de sauvegarder le badge');
+            throw new Error(`Erreur lors de la sauvegarde du badge: ${error.message}`);
         }
         console.log('✅ Badge successfully generated at:', badgePath);
 
