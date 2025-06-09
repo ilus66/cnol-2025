@@ -10,8 +10,6 @@ export default function Inscription() {
     telephone: '',
     entreprise: '',
     poste: '',
-    adresse: '',
-    codePostal: '',
     ville: '',
     pays: 'Maroc'
   });
@@ -27,14 +25,17 @@ export default function Inscription() {
         body: JSON.stringify({ ...formData, type }),
       });
       
-      if (!response.ok) throw new Error('Erreur lors de l\'inscription');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erreur lors de l\'inscription');
+      }
       
       const data = await response.json();
       alert('Inscription réussie ! Un email de confirmation vous a été envoyé.');
       window.location.href = '/';
     } catch (error) {
-      alert('Erreur lors de l\'inscription. Veuillez réessayer.');
       console.error('Erreur:', error);
+      alert(error.message);
     }
   };
 
@@ -141,29 +142,7 @@ export default function Inscription() {
                   </div>
                 </>
               )}
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Adresse</label>
-                <input
-                  type="text"
-                  name="adresse"
-                  required
-                  value={formData.adresse}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Code Postal</label>
-                  <input
-                    type="text"
-                    name="codePostal"
-                    required
-                    value={formData.codePostal}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Ville</label>
                   <input

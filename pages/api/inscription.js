@@ -16,14 +16,22 @@ export default async function handler(req, res) {
     // Ensure data directory exists
     const dataDir = path.join(process.cwd(), 'data');
     if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
+      try {
+        fs.mkdirSync(dataDir, { recursive: true });
+      } catch (error) {
+        throw new Error(`Impossible de créer le répertoire data: ${error.message}`);
+      }
     }
 
     // Save user data
     const usersPath = path.join(dataDir, 'users.json');
     let users = [];
-    if (fs.existsSync(usersPath)) {
-      users = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
+    try {
+      if (fs.existsSync(usersPath)) {
+        users = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
+      }
+    } catch (error) {
+      throw new Error(`Erreur lors de la lecture des données utilisateur: ${error.message}`);
     }
 
     const newUser = {
@@ -34,21 +42,34 @@ export default async function handler(req, res) {
     };
 
     users.push(newUser);
-    fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
+    try {
+      fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
+    } catch (error) {
+      throw new Error(`Erreur lors de l'enregistrement des données utilisateur: ${error.message}`);
+    }
 
     // Generate badge
-    const badgePath = await generateBadge({
-      ...userData,
-      userId,
-      type
-    });
+    let badgePath;
+    try {
+      badgePath = await generateBadge({
+        ...userData,
+        userId,
+        type
+      });
+    } catch (error) {
+      throw new Error(`Erreur lors de la génération du badge: ${error.message}`);
+    }
 
     // Send confirmation email with badge
-    await sendBadgeEmail({
-      ...userData,
-      userId,
-      badgeUrl: `/badges/${path.basename(badgePath)}`
-    });
+    try {
+      await sendBadgeEmail({
+        ...userData,
+        userId,
+        badgeUrl: `/badges/${path.basename(badgePath)}`
+      });
+    } catch (error) {
+      throw new Error(`Erreur lors de l'envoi de l'email: ${error.message}`);
+    }
 
     res.status(200).json({ 
       message: 'Inscription réussie',
@@ -59,4 +80,4 @@ export default async function handler(req, res) {
     console.error('Error during registration:', error);
     res.status(500).json({ message: 'Erreur serveur' });
   }
-} 
+}
