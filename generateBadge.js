@@ -389,11 +389,23 @@ export async function generateBadge(userData) {
             throw new Error(`Erreur lors de la sauvegarde du badge: ${error.message}`);
         }
 
-        return badgePath;
-    } catch (error) {
-        console.error('❌ Error generating badge:', error);
-        throw error;
-    }
+}
+        
+const pdfPath = path.join(badgesDir, `${userData.userId}.pdf`);
+try {
+    fs.writeFileSync(pdfPath, pdfBytes);
+    console.log('Badge saved to:', pdfPath);
+    return pdfPath;
+} catch (error) {
+    console.error('Error saving badge:', error);
+    throw new Error(`Erreur lors de la sauvegarde du badge: ${error.message}`);
+}
+
+} catch (error) {
+    console.error('❌ Error generating badge:', error);
+    throw error;
+}
+
 }
 
 // Test the badge generation
@@ -401,13 +413,12 @@ export async function generateBadge(userData) {
     try {
         await generateBadge({
             name: 'Youssef El Amrani',
-            function: 'Opticien',
-            city: 'Casablanca',
-            email: 'youssef@example.com',
-            userId: 'cnol2025-001'
+            type: 'visiteur'
         });
+        console.log('✅ Badge generated successfully');
     } catch (err) {
         console.error('❌ Failed to generate badge:', err);
     }
 })();
-  
+
+export default generateBadge;
