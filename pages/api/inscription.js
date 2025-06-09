@@ -40,6 +40,9 @@ export default async function handler(req, res) {
       if (fs.existsSync(usersPath)) {
         users = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
         console.log('Loaded existing users data');
+      } else {
+        console.log('Creating new users file');
+        fs.writeFileSync(usersPath, JSON.stringify([]));
       }
     } catch (error) {
       console.error('Error reading users data:', error);

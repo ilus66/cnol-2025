@@ -17,8 +17,10 @@ export async function generateBadge(userData) {
         const pdfDoc = await PDFDocument.create();
         const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]); // Portrait orientation
 
-        // Ensure badges directory exists
-        const badgesDir = path.join(process.cwd(), 'public', 'badges');
+        // Ensure badges directory exists (use temp directory for Vercel)
+        const badgesDir = process.env.VERCEL ? 
+            path.join(process.cwd(), '.tmp', 'badges') : 
+            path.join(process.cwd(), 'public', 'badges');
         console.log('Creating badge in directory:', badgesDir);
         try {
             if (!fs.existsSync(badgesDir)) {
@@ -361,23 +363,26 @@ export async function generateBadge(userData) {
                 color: rgb(0.2, 0.2, 0.2),
                 maxWidth: c4_box_w - 2 * conditionsPaddingX,
             });
-            y4 -= conditionsLineHeight;
-        }
 
         // Save the PDF
         const pdfBytes = await pdfDoc.save();
-        const badgeFileName = `${userData.userId}.pdf`;
-        const badgePath = path.join(badgesDir, badgeFileName);
-        console.log('Saving badge to:', badgePath);
+        const pdfPath = path.join(badgesDir, `${userData.userId}.pdf`);
+        
         try {
-            fs.writeFileSync(badgePath, pdfBytes);
-            console.log('Badge saved to:', badgePath);
-            return badgePath;
+            fs.writeFileSync(pdfPath, pdfBytes);
+            console.log('Badge saved to:', pdfPath);
+            
+            // Return different path based on environment
+            if (process.env.VERCEL) {
+                // In Vercel, we need to serve the file from the API route
+                return `/api/badge/${userData.userId}.pdf`;
+            } else {
+                return pdfPath;
+            }
         } catch (error) {
             console.error('Error saving badge:', error);
             throw new Error(`Erreur lors de la sauvegarde du badge: ${error.message}`);
         }
-        console.log('✅ Badge successfully generated at:', badgePath);
 
         return badgePath;
     } catch (error) {
