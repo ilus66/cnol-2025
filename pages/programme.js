@@ -62,7 +62,9 @@ export default function Programme() {
         </div>
 
         {loading ? (
-          <div className="text-center">Chargement...</div>
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredAteliers.map((atelier) => (
@@ -94,7 +96,7 @@ export default function Programme() {
                   <div className="mt-6">
                     <button
                       onClick={() => window.location.href = `/atelier/${atelier.id}`}
-                      className="btn-primary"
+                      className="btn-primary w-full"
                     >
                       Réserver
                     </button>
@@ -104,7 +106,6 @@ export default function Programme() {
             ))}
           </div>
         )}
-
         {!loading && filteredAteliers.length === 0 && (
           <div className="text-center text-gray-500 mt-8">
             Aucun événement trouvé pour ce filtre.
