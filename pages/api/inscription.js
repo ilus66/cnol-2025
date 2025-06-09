@@ -20,33 +20,44 @@ export default async function handler(req, res) {
     const { type, ...userData } = req.body;
     const userId = uuidv4();
     
-    // Ensure data directory exists
-    const dataDir = path.join(process.cwd(), 'data');
-    console.log('Creating data directory:', dataDir);
-    if (!fs.existsSync(dataDir)) {
-      try {
-        fs.mkdirSync(dataDir, { recursive: true });
-        console.log('Data directory created');
-      } catch (error) {
-        throw new Error(`Impossible de créer le répertoire data: ${error.message}`);
+    // For Vercel, use memory storage instead of file system
+    const dataDir = process.env.VERCEL ? null : path.join(process.cwd(), 'data');
+    
+    if (dataDir) {
+      console.log('Creating data directory:', dataDir);
+      if (!fs.existsSync(dataDir)) {
+        try {
+          fs.mkdirSync(dataDir, { recursive: true });
+          console.log('Data directory created');
+        } catch (error) {
+          throw new Error(`Impossible de créer le répertoire data: ${error.message}`);
+        }
       }
+    } else {
+      console.log('Running on Vercel - using memory storage');
     }
 
     // Save user data
-    const usersPath = path.join(dataDir, 'users.json');
-    console.log('Saving user data to:', usersPath);
     let users = [];
-    try {
-      if (fs.existsSync(usersPath)) {
-        users = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
-        console.log('Loaded existing users data');
-      } else {
-        console.log('Creating new users file');
-        fs.writeFileSync(usersPath, JSON.stringify([]));
+    
+    if (dataDir) {
+      const usersPath = path.join(dataDir, 'users.json');
+      console.log('Saving user data to:', usersPath);
+      
+      try {
+        if (fs.existsSync(usersPath)) {
+          users = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
+          console.log('Loaded existing users data');
+        } else {
+          console.log('Creating new users file');
+          fs.writeFileSync(usersPath, JSON.stringify([]));
+        }
+      } catch (error) {
+        console.error('Error reading users data:', error);
+        throw new Error(`Erreur lors de la lecture des données utilisateur: ${error.message}`);
       }
-    } catch (error) {
-      console.error('Error reading users data:', error);
-      throw new Error(`Erreur lors de la lecture des données utilisateur: ${error.message}`);
+    } else {
+      console.log('Running on Vercel - storing users in memory');
     }
 
     const newUser = {
@@ -63,12 +74,18 @@ export default async function handler(req, res) {
     });
 
     users.push(newUser);
-    try {
-      fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
-      console.log('User data saved successfully');
-    } catch (error) {
-      console.error('Error saving user data:', error);
-      throw new Error(`Erreur lors de l'enregistrement des données utilisateur: ${error.message}`);
+    
+    if (dataDir) {
+      try {
+        const usersPath = path.join(dataDir, 'users.json');
+        fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
+        console.log('User data saved successfully');
+      } catch (error) {
+        console.error('Error saving user data:', error);
+        throw new Error(`Erreur lors de l'enregistrement des données utilisateur: ${error.message}`);
+      }
+    } else {
+      console.log('Running on Vercel - user data stored in memory');
     }
 
     // Generate badge

@@ -48,24 +48,22 @@ export async function sendBadgeEmail(userData) {
     }
 
     const mailOptions = {
-        from: process.env.SMTP_FROM || process.env.SMTP_USER,
-        to: userData.email,
-        subject: `Votre badge CNOL 2025 – ${userData.exposant || ''}`,
-        text: `Bonjour ${userData.name},\n\nVous trouverez ci-joint votre badge staff pour le CNOL 2025.\n\nLieu : Centre de conférences Fm6education, Rabat\nDates : 10-12 octobre 2025\n\nLien de téléchargement : ${userData.badgeUrl || ''}\n\nLe QR code est intégré dans le badge.\n\nCordialement,\nL'équipe CNOL`,
-        attachments: [
-            {
-                filename: `${userData.userId}.pdf`,
-                path: badgePath,
-                contentType: 'application/pdf',
-            },
-        ],
-    };
-
     try {
+        // Create the email content
+        const mailOptions = {
+            from: process.env.SMTP_FROM,
+            to: userData.email,
+            subject: 'Votre badge CNOL 2025',
+            html: `
+                <h2>Bonjour ${userData.prenom} ${userData.nom},</h2>
+                <p>Merci pour votre inscription au CNOL 2025. Vous pouvez télécharger votre badge ci-dessous.</p>
+                <p><a href="${userData.badgeUrl}" target="_blank">Télécharger mon badge</a></p>
+                <p>Cordialement,</p>
+                <p>L'équipe CNOL</p>
+            `
+        };
+
         // Temporairement désactivé pour le test
-        // const info = await transporter.sendMail(mailOptions);
-        // console.log('Email sent:', info.response);
-        // return info;
         console.log('Email sending temporarily disabled for testing');
         return { response: 'Email sending disabled for testing' };
     } catch (error) {
