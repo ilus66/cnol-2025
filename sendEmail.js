@@ -9,9 +9,11 @@ const __dirname = path.dirname(__filename);
 
 // userData: { email, name, userId, exposant, badgeUrl }
 export async function sendBadgeEmail(userData) {
-    // Configure transporter (Gmail SMTP or other)
+    // Configure transporter (cnol.ma SMTP)
     const transporter = nodemailer.createTransport({
-        service: process.env.SMTP_SERVICE || 'gmail',
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT,
+        secure: process.env.SMTP_SECURE === 'true',
         auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
