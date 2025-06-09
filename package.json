@@ -1,0 +1,23 @@
+{
+  "name": "cnol-online",
+  "version": "1.0.0",
+  "description": "Application CNOL Online",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "generate-badge": "node scripts/test-badge-visiteur.js"
+  },
+  "dependencies": {
+    "formidable": "^3.5.4",
+    "next": "^15.3.3",
+    "nodemailer": "^7.0.3",
+    "pdf-lib": "^1.17.1",
+    "qrcode": "^1.5.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "uuid": "^11.1.0"
+  }
+}
