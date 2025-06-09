@@ -1,4 +1,29 @@
+import { useState, useEffect } from 'react';
+import Layout from '../components/Layout';
+
 export default function Home() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Vérifier si l'utilisateur est authentifié (à adapter selon votre système d'authentification)
+    const token = localStorage.getItem('cnol-token');
+    setIsAuthenticated(!!token);
+    setLoading(false);
+  }, []);
+
+  if (loading) {
+    return (
+      <Layout title="CNOL Online">
+        <div className="container">
+          <div className="flex items-center justify-center h-screen">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <div style={{
       minHeight: '100vh',
